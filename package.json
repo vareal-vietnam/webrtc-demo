@@ -1,0 +1,16 @@
+{
+  "name": "video-chat",
+  "version": "1.0.0",
+  "description": "video chat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hien",
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^8.0.0",
+    "socket.io": "^2.2.0",
+    "twilio": "^3.33.0"
+  }
+}
