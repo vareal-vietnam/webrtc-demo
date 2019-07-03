@@ -112,7 +112,7 @@ VideoChat.videoButton.addEventListener(
   'click',
   VideoChat.requestMediaStream,
   false
-).catch(handleLocalMediaStreamError);
+)
 
 VideoChat.callButton = document.getElementById('call');
 
