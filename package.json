@@ -4,6 +4,7 @@
   "description": "video chat",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "hien",
@@ -12,5 +13,8 @@
     "hapi": "^18.1.0",
     "socket.io": "^2.2.0",
     "twilio": "^3.33.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.0.1"
   }
 }
