@@ -1,3 +1,4 @@
+// Hapi build web services such as JSON API
 let Hapi = require('hapi');
 let server = new Hapi.Server()
 server.connection({
@@ -5,8 +6,11 @@ server.connection({
   'port': 3000
 });
 
+// attach Socket.io process to Hapi server
 let socketio = require('socket.io');
 let io = socketio(server.listener);
+
+// load twilio node library(with credentials)
 let twilio = require('twilio')(process.env.ACCOUNT_SID,  process.env.AUTH_TOKEN);
 
 // Server static assets
@@ -18,6 +22,7 @@ server.route({
   }
 });
 
+// signaling
 io.on('connection', (socket) => {
   socket.on('join', (room) => {
     let clients = io.sockets.adapter.rooms[room];
@@ -34,6 +39,7 @@ io.on('connection', (socket) => {
     }
   });
 
+// TURN twilio server
   socket.on('token', () => {
     twilio.tokens.create( (err, response) => {
       if(err){
@@ -44,6 +50,7 @@ io.on('connection', (socket) => {
     });
   });
 
+  // send candidate straight on to the other browser
   socket.on('candidate', (candidate) => {
     socket.broadcast.emit('candidate', candidate);
   });

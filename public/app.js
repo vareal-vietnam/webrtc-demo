@@ -1,11 +1,14 @@
+// Setup VideoChat object
 let VideoChat = {
-  socket: io(),
+  socket: io(),// Connect to server
   requestMediaStream: function requestMediaStream(event) {
-    navigator.mediaDevices.getUserMedia(
+    // navigator.mediaDevices.getUserMedia => adapterjs care about the prefix
+    getUserMedia(
     {
       video: true,
       audio: true
     },
+    // promopt user to accept page request to use media
     VideoChat.onMediaStream,
     VideoChat.noMediaStream
     );
@@ -17,8 +20,8 @@ let VideoChat = {
     VideoChat.localStream = stream;
     VideoChat.videoButton.setAttribute('disabled', 'disabled');
     VideoChat.localVideo.src = window.URL.createObjectURL(stream);
-    VideoChat.socket.emit('join', 'test');
-    VideoChat.socket.on('ready', VideoChat.readyToCall);
+    VideoChat.socket.emit('join', 'test');// Join the room
+    VideoChat.socket.on('ready', VideoChat.readyToCall);// Listen to the event
     VideoChat.socket.on('offer', VideoChat.onOffer);
   },
 
@@ -27,6 +30,7 @@ let VideoChat = {
     VideoChat.socket.emit('token');
   },
 
+// Call back remove disable call button
   readyToCall: function readyToCall(event) {
     VideoChat.callButton.removeAttribute('disabled');
   },
@@ -42,6 +46,7 @@ let VideoChat = {
 
   onToken: function onToken(callback){
     return (token) => {
+      // STUN twilio server
       VideoChat.peerConnection = new RTCPeerConnection({
         iceServers: token.iceServers
       });
@@ -108,6 +113,7 @@ let VideoChat = {
 
 VideoChat.videoButton = document.getElementById('get-video');
 
+// Handle click get video button
 VideoChat.videoButton.addEventListener(
   'click',
   VideoChat.requestMediaStream,
@@ -116,6 +122,7 @@ VideoChat.videoButton.addEventListener(
 
 VideoChat.callButton = document.getElementById('call');
 
+// Handle click call button
 VideoChat.callButton.addEventListener(
   'click',
   VideoChat.startCall,
