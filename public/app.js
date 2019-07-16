@@ -1,125 +1,140 @@
-'use strict';
+'use strict'
 
-let socket = io();
-let localVideo = document.getElementById('local-video');
-let remoteVideo = document.getElementById('remote-video');
-let getVideoButton = document.getElementById('get-video');
-let callButton = document.getElementById('call');
+const VideoStream = {
+  socket: io(),
 
-const servers = {
-  'iceServers':  [{'urls': 'stun:3.114.49.64'}]
-};
+  // call onMediaStream, noMediaStream on it
+  showMyFace: function showMyFace () {
+    console.log('showMyFace function.')
+    VideoStream.localVideo = document.getElementById('local-video')
+    VideoStream.localVideo.volumn = 0
+    VideoStream.getVideoButton.setAttribute('disabled', 'disabled')
+    VideoStream.socket.emit('join', 'test')
+    VideoStream.socket.on('ready', VideoStream.readyToCall)
+    VideoStream.socket.on('offer', VideoStream.onOffer)
 
-let peerConnection = new RTCPeerConnection(servers);
+    navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      .then(stream => VideoStream.localVideo.srcObject = stream)
+      .then(stream => VideoStream.localStream = stream)
+    console.log('end showMyFace.')
+  },
 
-// move the below function to (onToken)
-function onConnect(callback){
-  return function(){
-    peerConnection.onicecandidate = onIceCandidate();
-    peerConnection.onaddstream = onAddStream();
+  // enable Call button when ready to call
+  readyToCall: function readyToCall (event) {
+    console.log('readyToCall function.')
+    VideoStream.callButton.removeAttribute('disabled')
+  },
 
-    socket.on('candidate', onCandidate());
-    socket.on('answer', onAnswer());
-    callback();
-  }
-}
+  // set up call back to run turn server, call onConnect here
+  startCall: function startCall (event) {
+    console.log('startCall function.')
+    VideoStream.socket.on('connect', VideoStream.onConnect(VideoStream.createOffer))
+    VideoStream.socket.emit('connect')
+    VideoStream.callButton.setAttribute('disabled', 'disabled')
+  },
 
-// call onMediaStream, noMediaStream on it
-function showMyFace() {
-  navigator.mediaDevices.getUserMedia({audio:true, video:true})
-    .then(stream => localVideo.srcObject = stream)
-    .then(stream => peerConnection.addStream(stream));
-  onMediaStream();
-  noMediaStream();
-}
-
-function onMediaStream(stream){
-  localVideo.volumn = 0;
-  getVideoButton.setAttribute('disabled', 'disabled');
-
-  socket.emit('join', 'test');
-  socket.on('ready', readyToCall());
-  socket.on('offer', onOffer());
-}
-
-function noMediaStream(){
-  console.log('No media stream for us.');
-}
-
-// enable Call button when ready to call
-function readyToCall(event){
-  callButton.removeAttribute('disabled');
-}
-
-// set up call back to run turn server, call onConnect here
-function startCall(event){
-  socket.on('connect', onConnect(createOffer()));
-  socket.emit('connect');
-  callButton.setAttribute('disabled', 'disabled');
-}
-
-// when peerConnection generates and ice candidate, send it over the socket
-// to the pee.
-function onIceCandidate(event){
-  if(event.candidate){
-    socket.emit('candidate', JSON.stringify(event.candidate));
-  }
-}
-
-// When receiving a candidate over the socket, turn it back into a real
-// RTCIceCandidate and add it to the peerConnection.
-function onCandidate(candidate){
-  var rtcCandidate = new RTCIceCandidate(JSON.parse(candidate));
-  peerConnection.addIceCandidate(rtcCandidate);
-}
-
-// Create an offer that contains the media capabilities of the browser.
-function createOffer(){
-  peerConnection.createOffer()
-    .then(offer => peerConnection.setLocalDescription(offer))
-    .then(offer => socket.emit('offer', JSON.stringify(offer)));
-}
-
-// Create an answer with the media capabilities that both browsers share.
-function createAnswer(offer){
-  // peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(offer)))
-  //   .then(() => peerConnection.createAnswer())
-  //   .then(answer => pc.setLocalDescription(answer))
-  //   .then(answer => socket.emit('answer', JSON.stringify(answer)));
-  return () => {
-    rtcOffer = new RTCSessionDescription(JSON.parse(offer));
-    peerConnection.setRemoteDescription(rtcOffer);
-    peerConnection.createAnswer(
-      (answer) => {
-        peerConnection.setLocalDescription(answer);
-        socket.emit('answer'. JSON.stringify(answer));
-      },
-      (err) => {
-        console.log(err);
+  onConnect: function onConnect (callback) {
+    console.log("onConnect function.")
+    return function (connect) {
+      VideoStream.server = {
+        iceServers: [{ urls: 'stun:3.114.49.64' }]
       }
-    );
+
+      VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
+      console.log('already defined')
+      VideoStream.peerConnection.addStream(VideoStream.localStream)
+      VideoStream.peerConnection.onicecandidate = VideoStream.onIceCandidate
+      VideoStream.peerConnection.ontrack = VideoStream.onAddStream
+
+      VideoStream.socket.on('candidate', VideoStream.onCandidate)
+      VideoStream.socket.on('answer', VideoStream.onAnswer)
+      callback()
+    }
+  },
+
+  // when peerConnection generates and ice candidate, send it over the socket
+  // to the pee.
+  onIceCandidate: function onIceCandidate (event) {
+    console.log('onIceCandidate function.')
+    if (event.candidate) {
+      VideoStream.socket.emit('candidate', JSON.stringify(event.candidate))
+    }
+  },
+
+  // When receiving a candidate over the socket, turn it back into a real
+  // RTCIceCandidate and add it to the peerConnection.
+  onCandidate: function onCandidate (candidate) {
+    console.log('onCandidate function.')
+    VideoStream.rtcCandidate = new RTCIceCandidate(JSON.parse(candidate))
+    VideoStream.peerConnection.addIceCandidate(VideoStream.rtcCandidate)
+  },
+
+  // Create an offer that contains the media capabilities of the browser.
+  createOffer: function createOffer () {
+    console.log('createOffer function.')
+    VideoStream.peerConnection.createOffer()
+      .then(offer => VideoStream.peerConnection.setLocalDescription(offer))
+      .then(offer => VideoStream.socket.emit('offer', JSON.stringify(offer)))
+  },
+
+  // Create an answer with the media capabilities that both browsers share.
+  createAnswer: function createAnswer (offer) {
+    console.log('createAnswer function.')
+    // VideoStream.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(offer)))
+    //   .then(() => VideoStream.peerConnection.createAnswer())
+    //   .then(answer => VideoStream.setLocalDescription(answer))
+    //   .then(answer => VideoStream.socket.emit('answer', JSON.stringify(answer)));
+    return function(){
+      console.log("log offer:" + offer)
+      rtcOffer = new RTCSessionDescription(JSON.parse(offer));
+      VideoStream.peerConnection.setRemoteDescription(rtcOffer);
+      VideoStream.peerConnection.createAnswer(
+        function(answer){
+          VideoStream.peerConnection.setLocalDescription(answer);
+          VideoStream.socket.emit('answer', JSON.stringify(answer));
+        },
+        function(err){
+          // Handle a failed answer creation.
+          console.log(err);
+        }
+      );
+    }
+  },
+
+  // create an offer
+  onOffer: function onOffer (offer) {
+    console.log('onOffer function.')
+    VideoStream.socket.on('connect', VideoStream.onConnect(VideoStream.createAnswer(offer)))
+    VideoStream.socket.emit('connect')
+  },
+
+  // add received answer to peerConnection as remote description
+  onAnswer: function onAnswer (answer) {
+    console.log('onAnswer function.')
+    VideoStream.rtcAnswer = new RTCSessionDescription(JSON.parse(answer))
+    VideoStream.peerConnection.setRemoteDescription(VideoStream.rtcAnswer)
+  },
+
+  // When the peerConnection receives the actual media stream from the other
+  // browser, add it to the other video element on the page.
+  onAddStream: function onAddStream (event) {
+    console.log('onAddStream function.')
+    VideoStream.remoteVideo = document.getElementById('remote-video')
+    VideoStream.remoteVideo.srcObject = event.stream
   }
 }
 
-// create an offer
-function onOffer(offer){
-  socket.on('connect', onConnect(createAnswer(offer)))
-}
+VideoStream.getVideoButton = document.getElementById('get-video')
+VideoStream.callButton = document.getElementById('call')
 
-// add received answer to peerConnection as remote description
-function onAnswer(answer){
-  let rtcAnswer = new RTCSessionDescription(JSON.parse(answer));
-  peerConnection.setRemoteDescription(rtcAnswer);
-}
-
-// When the peerConnection receives the actual media stream from the other
-// browser, add it to the other video element on the page.
-function onAddStream(event){
-  remoteVideo.srcObject = event.stream;
-}
-
-getVideoButton.addEventListener(
+VideoStream.getVideoButton.addEventListener(
   'click',
-  showMyFace(),
+  VideoStream.showMyFace,
   false
-);
+)
+
+VideoStream.callButton.addEventListener(
+  'click',
+  VideoStream.startCall,
+  false
+)
