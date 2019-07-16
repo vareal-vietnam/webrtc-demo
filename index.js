@@ -1,26 +1,39 @@
+'use strict';
+// require('dotenv').config();
+
 // Hapi build web services such as JSON API
-let Hapi = require('hapi');
-let server = new Hapi.Server()
-server.connection({
-  'host': 'localhost',
-  'port': 3000
+const Path = require('path');
+const Hapi = require('hapi');
+const Inert = require('@hapi/inert');
+
+const server = new Hapi.Server({
+  host: 'localhost',
+  port: 3000
 });
 
 // attach Socket.io process to Hapi server
-let socketio = require('socket.io');
-let io = socketio(server.listener);
-
-// load twilio node library(with credentials)
-let twilio = require('twilio')(process.env.ACCOUNT_SID,  process.env.AUTH_TOKEN);
+const socketio = require('socket.io');
+const io = socketio(server.listener);
 
 // Server static assets
-server.route({
-  method: 'GET',
-  path: '/{path*}',
-  handler: {
-    directory: { path: './public', listing: false, index: true }
-  }
-});
+const start = async () => {
+  await server.register(Inert);
+
+  server.route({
+    method: 'GET',
+    path: '/{path*}',
+    handler: {
+      directory: {
+        path: './public',
+        listing: false,
+        index: true
+      }
+    }
+  });
+
+  await server.start();
+  console.log('Server running at:', server.info.uri);
+};
 
 // signaling
 io.on('connection', (socket) => {
@@ -39,15 +52,9 @@ io.on('connection', (socket) => {
     }
   });
 
-// TURN twilio server
-  socket.on('token', () => {
-    twilio.tokens.create( (err, response) => {
-      if(err){
-        console.log(err);
-      }else {
-        socket.emit('token', response);
-      }
-    });
+// TURN server
+  socket.on('connect', (connect) => {
+    socket.broadcast.emit('connect', connect);
   });
 
   // send candidate straight on to the other browser
@@ -65,6 +72,4 @@ io.on('connection', (socket) => {
 });
 
 // Start the server
-server.start(function(){
-  console.log('Server running at: ', server.info.uri);
-})
+start();

@@ -1,130 +1,125 @@
-// Setup VideoChat object
-let VideoChat = {
-  socket: io(),// Connect to server
-  requestMediaStream: function requestMediaStream(event) {
-    // navigator.mediaDevices.getUserMedia => adapterjs care about the prefix
-    getUserMedia(
-    {
-      video: true,
-      audio: true
-    },
-    // promopt user to accept page request to use media
-    VideoChat.onMediaStream,
-    VideoChat.noMediaStream
-    );
-  },
+'use strict';
 
-  onMediaStream: function onMediaStream(stream) {
-    VideoChat.localVideo = document.getElementById('local-video');
-    VideoChat.localVideo.volumn = 0;
-    VideoChat.localStream = stream;
-    VideoChat.videoButton.setAttribute('disabled', 'disabled');
-    VideoChat.localVideo.src = window.URL.createObjectURL(stream);
-    VideoChat.socket.emit('join', 'test');// Join the room
-    VideoChat.socket.on('ready', VideoChat.readyToCall);// Listen to the event
-    VideoChat.socket.on('offer', VideoChat.onOffer);
-  },
+let socket = io();
+let localVideo = document.getElementById('local-video');
+let remoteVideo = document.getElementById('remote-video');
+let getVideoButton = document.getElementById('get-video');
+let callButton = document.getElementById('call');
 
-  onOffer: function onOffer(offer){
-    VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createAnswer(offer)));
-    VideoChat.socket.emit('token');
-  },
+const servers = {
+  'iceServers':  [{'urls': 'stun:3.114.49.64'}]
+};
 
-// Call back remove disable call button
-  readyToCall: function readyToCall(event) {
-    VideoChat.callButton.removeAttribute('disabled');
-  },
+let peerConnection = new RTCPeerConnection(servers);
 
-  noMediastream: function noMediaStream(){
-    console.log("No media stream for us.");
-  },
+// move the below function to (onToken)
+function onConnect(callback){
+  return function(){
+    peerConnection.onicecandidate = onIceCandidate();
+    peerConnection.onaddstream = onAddStream();
 
-  startCall: function startCall(event){
-    VideoChat.socket.on('token', VideoChat.onToken(VideoChat.createOffer));
-    VideoChat.socket.emit('token');
-  },
+    socket.on('candidate', onCandidate());
+    socket.on('answer', onAnswer());
+    callback();
+  }
+}
 
-  onToken: function onToken(callback){
-    return (token) => {
-      // STUN twilio server
-      VideoChat.peerConnection = new RTCPeerConnection({
-        iceServers: token.iceServers
-      });
+// call onMediaStream, noMediaStream on it
+function showMyFace() {
+  navigator.mediaDevices.getUserMedia({audio:true, video:true})
+    .then(stream => localVideo.srcObject = stream)
+    .then(stream => peerConnection.addStream(stream));
+  onMediaStream();
+  noMediaStream();
+}
 
-      VideoChat.peerConnection.onicecandidate = VideoChat.onIceCandidate;
-      VideoChat.socket.on('candidate', VideoChat.onCandidate);
-      VideoChat.peerConnection.addStream(VideoChat.localStream);
-      VideoChat.peerConnection.onaddstream = VideoChat.onAddStream;
-      VideoChat.socket.on('answer', VideoChat.onAswer);
-      callback();
-    }
-  },
+function onMediaStream(stream){
+  localVideo.volumn = 0;
+  getVideoButton.setAttribute('disabled', 'disabled');
 
-  onAnswer: function onAnswer(answer) {
-    let rtcAnswer = new RTCSessionDescription(JSON.parse(answer));
-    VideoChat.peerConnection.setRemoteDescription(rtcAnswer);
-  },
+  socket.emit('join', 'test');
+  socket.on('ready', readyToCall());
+  socket.on('offer', onOffer());
+}
 
-  onAddStream: function onAddStream(event) {
-    VideoChat.remoteVideo = document.getElementById('remote-video');
-    VideoChat.remoteVideo.src = window.URL.createObjectURL(event.stream);
-  },
+function noMediaStream(){
+  console.log('No media stream for us.');
+}
 
-  createOffer: function createOffer(){
-    VideoChat.peerConnection.createOffer(
-      (offer) => {
-        VideoChat.peerConnection.setLocalDescription(offer);
-        socket.emit('offer', JSON.stringify(offer));
+// enable Call button when ready to call
+function readyToCall(event){
+  callButton.removeAttribute('disabled');
+}
+
+// set up call back to run turn server, call onConnect here
+function startCall(event){
+  socket.on('connect', onConnect(createOffer()));
+  socket.emit('connect');
+  callButton.setAttribute('disabled', 'disabled');
+}
+
+// when peerConnection generates and ice candidate, send it over the socket
+// to the pee.
+function onIceCandidate(event){
+  if(event.candidate){
+    socket.emit('candidate', JSON.stringify(event.candidate));
+  }
+}
+
+// When receiving a candidate over the socket, turn it back into a real
+// RTCIceCandidate and add it to the peerConnection.
+function onCandidate(candidate){
+  var rtcCandidate = new RTCIceCandidate(JSON.parse(candidate));
+  peerConnection.addIceCandidate(rtcCandidate);
+}
+
+// Create an offer that contains the media capabilities of the browser.
+function createOffer(){
+  peerConnection.createOffer()
+    .then(offer => peerConnection.setLocalDescription(offer))
+    .then(offer => socket.emit('offer', JSON.stringify(offer)));
+}
+
+// Create an answer with the media capabilities that both browsers share.
+function createAnswer(offer){
+  // peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(offer)))
+  //   .then(() => peerConnection.createAnswer())
+  //   .then(answer => pc.setLocalDescription(answer))
+  //   .then(answer => socket.emit('answer', JSON.stringify(answer)));
+  return () => {
+    rtcOffer = new RTCSessionDescription(JSON.parse(offer));
+    peerConnection.setRemoteDescription(rtcOffer);
+    peerConnection.createAnswer(
+      (answer) => {
+        peerConnection.setLocalDescription(answer);
+        socket.emit('answer'. JSON.stringify(answer));
       },
       (err) => {
         console.log(err);
       }
-    );   
-  },
-
-  createAnswer: function createAnswer(offer){
-    return () => {
-      rtcOffer = new RTCSessionDescription(JSON.parse(offer));
-      VideoChat.peerConnection.setRemoteDescription(rtcOffer);
-      VideoChat.peerConnection.createAnswer(
-        (answer) => {
-          VideoChat.peerConnection.setLocalDescription(answer);
-          VideoChat.socket.emit('answer', JSON.stringify(answer));
-        },
-        (err) => {
-          console.log(err);
-        }
-      )
-    }
-  },
-
-  onCandidate: function onCandidate(candidate){
-    rtcCandidate = new RTCIceCandidate(JSON.parse(candidate));
-    VideoChat.peerConnection.addIceCandidate(rtcCandidate);
-  },
-
-  onIceCandidate: function onIceCandidate(event){
-    if(event.candidate){
-      console.log('Generated candidate!');
-      VideoChat.socket.emit('candidate', JSON.stringify(event.candidate));
-    }
+    );
   }
-};
+}
 
-VideoChat.videoButton = document.getElementById('get-video');
+// create an offer
+function onOffer(offer){
+  socket.on('connect', onConnect(createAnswer(offer)))
+}
 
-// Handle click get video button
-VideoChat.videoButton.addEventListener(
+// add received answer to peerConnection as remote description
+function onAnswer(answer){
+  let rtcAnswer = new RTCSessionDescription(JSON.parse(answer));
+  peerConnection.setRemoteDescription(rtcAnswer);
+}
+
+// When the peerConnection receives the actual media stream from the other
+// browser, add it to the other video element on the page.
+function onAddStream(event){
+  remoteVideo.srcObject = event.stream;
+}
+
+getVideoButton.addEventListener(
   'click',
-  VideoChat.requestMediaStream,
-  false
-)
-
-VideoChat.callButton = document.getElementById('call');
-
-// Handle click call button
-VideoChat.callButton.addEventListener(
-  'click',
-  VideoChat.startCall,
+  showMyFace(),
   false
 );
