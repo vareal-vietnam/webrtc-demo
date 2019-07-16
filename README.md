@@ -1,10 +1,5 @@
 # video-chat
 ## install:
-- `npm install @hapi/hapi socket.io twilio --save`
-## export twilio credentials to enviroment:
-```
-  $ export TWILIO_ACCOUNT_SID=ACXXXXXXXXXX
-  $ export TWILIO_AUTH_TOKEN=YYYYYYYYY
-```
+- `npm install @hapi/hapi @hapi/inert socket.io --save`
 ## run:
-- `node index.js`
+- `npm start`
