@@ -43,18 +43,19 @@ io.on('connection', (socket) => {
     let clients = io.sockets.adapter.rooms[room]
     let numClients = (typeof clients !== 'undefined') ? Object.values(clients)[1] : 0
 
-    if (numClients == 0) {
-      console.log('LOG: numClients = 0')
-      socket.join(room)
-    } else if (numClients == 1) {
-      console.log('LOG: numClients = 1')
+    // if (numClients == 0) {
+    //   console.log('LOG: numClients = 0')
+    //   socket.join(room)
+    // } else if ((numClients >= 1) || (numClients <= 4)) {
+    //   console.log('LOG: numClients = 1')
+      socket.emit('numClients', numClients)
       socket.join(room)
       socket.emit('ready', room)
       socket.broadcast.emit('ready', room)
-    } else {
-      console.log('LOG: numClients > 1')
-      socket.emit('full', room)
-    }
+    // } else {
+    //   console.log('LOG: numClients > 1')
+    //   socket.emit('full', room)
+    // }
   })
 
   // TURN server

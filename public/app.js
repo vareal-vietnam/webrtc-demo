@@ -5,7 +5,7 @@ const VideoStream = {
   // Initialise our connection to the WebSocket.
   socket: io(),
 
-  // Call to showMyFace (provided by adapter.js for cross browser compatibility)
+  // Call to showMyFace
   // asking for access to both the video and audio streams.
   showMyFace: function showMyFace () {
     console.log('showMyFace function.')
@@ -36,6 +36,16 @@ const VideoStream = {
   // Set up a callback to run when we connect to TURN server. And disable get-video button
   startCall: function startCall (event) {
     console.log('startCall function.')
+    // need a loop run here to add each remote element to the local element
+    VideoStream.socket.on('numClients', (numClients) => {
+      console.log('LOG: numClients:' + numClients)
+      if (numClients > 0){
+        console.log("inside if")
+        VideoStream.remoteVideo = "<video id='remote-video" + numClients + "'height='150' autoplay>Hello</video>"
+        VideoStream.localVideo.insertAdjacentHTML('afterend', VideoStream.remoteVideo)
+        console.log('remoteVideo: ' + VideoStream.remoteVideo)
+      }
+    })
     VideoStream.socket.on('connect', VideoStream.onConnect(VideoStream.createOffer))
     VideoStream.socket.emit('connect')
     VideoStream.callButton.setAttribute('disabled', 'disabled')
@@ -144,7 +154,7 @@ const VideoStream = {
   // browser, add it to the other video element on the page.
   onAddStream: function onAddStream (event) {
     console.log('onAddStream function.')
-    VideoStream.remoteVideo = document.getElementById('remote-video')
+    VideoStream.remoteVideo = document.getElementById('remote-video1')
     VideoStream.remoteVideo.srcObject = event.stream
   }
 }
