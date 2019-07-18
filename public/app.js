@@ -59,9 +59,9 @@ const VideoStream = {
     return function () {
       VideoStream.server = {
         iceServers: [
-          { urls: 'stun:3.114.49.64' },
+          { urls: 'stun:3.114.49.64:3478' },
           {
-            urls: 'turn:3.114.49.64:3478?transport=udp',
+            urls: 'turn:3.114.49.64:5349?transport=udp',
             credential: 'v@real2019',
             username: 'turnserver'
           }
