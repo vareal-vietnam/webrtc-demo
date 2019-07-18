@@ -8,7 +8,7 @@ const Inert = require('@hapi/inert')
 
 const server = new Hapi.Server({
   host: process.env.HOST,
-  port: process.env.PORT
+  port: process.env.PORT || 3478
 })
 
 console.log('the host: ' + process.env.HOST)
