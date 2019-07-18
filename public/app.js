@@ -20,6 +20,7 @@ const VideoStream = {
     navigator.mediaDevices.getUserMedia({ audio: true, video: true })
       .then(stream => VideoStream.localVideo.srcObject = stream)
       .then(stream => VideoStream.localStream = stream)
+    console.log("cannot get media")
 
     // Ready to join the chat room
     VideoStream.socket.emit('join', 'test')
