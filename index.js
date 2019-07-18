@@ -1,5 +1,5 @@
 'use strict'
-// require('dotenv').config();
+require('dotenv').config();
 
 // Hapi build web services such as JSON API
 const Path = require('path')
@@ -7,8 +7,8 @@ const Hapi = require('hapi')
 const Inert = require('@hapi/inert')
 
 const server = new Hapi.Server({
-  host: 'localhost',
-  port: 3000
+  host: process.env.HOST,
+  port: process.env.PORT
 })
 
 // attach Socket.io process to Hapi server
