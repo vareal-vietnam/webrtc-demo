@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     if (numClients == 0) {
       console.log('LOG: numClients = 0')
       socket.join(room)
-    } else if ((numClients >= 1) || (numClients <= 4)) {
+    } else if (numClients == 1) {
       console.log('LOG: numClients = 1')
       socket.emit('numClients', numClients)
       socket.join(room)
