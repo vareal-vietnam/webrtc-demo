@@ -8,11 +8,12 @@ const Inert = require('@hapi/inert')
 
 const server = new Hapi.Server({
   host: process.env.HOST,
-  port: process.env.PORT || 3478
+  port: ~~process.env.PORT || 3478
 })
 
 console.log('the host: ' + process.env.HOST)
 console.log('the port: ' + process.env.PORT)
+console.log('port type: ' + typeof ~~process.env.PORT)
 // attach Socket.io process to Hapi server
 const socketio = require('socket.io')
 const io = socketio(server.listener)
