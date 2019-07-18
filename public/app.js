@@ -58,8 +58,14 @@ const VideoStream = {
     // Set up a new RTCPeerConnection using the iceServers.
     return function () {
       VideoStream.server = {
-        iceServers: [{ urls: 'stun:3.114.49.64' }]
-        // iceServers: [{urls:'stun:stun.l.google.com:19302'}]
+        iceServers: [
+          { urls: 'stun:3.114.49.64' },
+          {
+            urls: 'turn:3.114.49.64:3478?transport=udp',
+            credential: 'v@real2019',
+            username: 'turnserver'
+          }
+        ]
       }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
