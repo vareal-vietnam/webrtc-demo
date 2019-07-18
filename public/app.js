@@ -20,7 +20,6 @@ const VideoStream = {
     navigator.mediaDevices.getUserMedia({ audio: true, video: true })
       .then(stream => VideoStream.localVideo.srcObject = stream)
       .then(stream => VideoStream.localStream = stream)
-    console.log("cannot get media")
 
     // Ready to join the chat room
     VideoStream.socket.emit('join', 'test')
@@ -58,8 +57,8 @@ const VideoStream = {
     // Set up a new RTCPeerConnection using the iceServers.
     return function (connect) {
       VideoStream.server = {
-        iceServers: [{ urls: 'stun:3.114.49.64' }]
-        // iceServers: [{urls:'stun:stun.l.google.com:19302'}]
+        // iceServers: [{ urls: 'stun:3.114.49.64' }]
+        iceServers: [{urls:'stun:stun.l.google.com:19302'}]
       }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
