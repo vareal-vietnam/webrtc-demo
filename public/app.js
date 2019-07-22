@@ -62,7 +62,7 @@ const VideoStream = {
         iceServers: [
           { urls: 'stun:3.114.49.64' },
           {
-            urls: 'turn:3.144.49.64?transport=udp',
+            urls: 'turn:3.114.49.64?transport=udp',
             credential: token.password,
             username: token.name
           }
