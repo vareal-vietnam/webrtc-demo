@@ -68,6 +68,9 @@ const VideoStream = {
           }
         ]
       }
+
+      console.log('credential: ' + token.password)
+      console.log('name: ' + token.name)
       // {
       //   urls: 'turn:numb.viagenie.ca?transport=udp',
       //   credential: 'muazkh',
@@ -75,6 +78,7 @@ const VideoStream = {
       // }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
+      console.log('peerConnection: ' + VideoStream.peerConnection)
       // Add the local video stream to the peerConnection.
       VideoStream.peerConnection.addStream(VideoStream.localStream)
       // Set up callbacks for the connection generating iceCandidates or
