@@ -70,8 +70,8 @@ const VideoStream = {
           // }
           {
             urls: 'turn:3.114.49.64?transport=udp',
-            credential: token.password,
-            username: token.name
+            credential: token.password.toString(),
+            username: token.name.toString()
           }
         ]
       }
