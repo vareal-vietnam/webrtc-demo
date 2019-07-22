@@ -61,18 +61,18 @@ const VideoStream = {
       VideoStream.server = {
         iceServers: [
           { urls: 'stun:3.114.49.64' },
-          // {
-          //   urls: 'turn:numb.viagenie.ca?transport=udp',
-          //   credential: 'muazkh',
-          //   username: 'webrtc@live.com'
-          // }
           {
-            urls: 'turn:3.144.49.64',
+            urls: 'turn:3.144.49.64?transport=udp',
             credential: token.password,
             username: token.name
           }
         ]
       }
+      // {
+      //   urls: 'turn:numb.viagenie.ca?transport=udp',
+      //   credential: 'muazkh',
+      //   username: 'webrtc@live.com'
+      // }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
       // Add the local video stream to the peerConnection.
