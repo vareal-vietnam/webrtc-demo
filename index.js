@@ -1,19 +1,19 @@
 'use strict'
-require('dotenv').config();
+require('dotenv').config()
+const crypto = require('crypto')
 
 // Hapi build web services such as JSON API
 const Path = require('path')
 const Hapi = require('hapi')
 const Inert = require('@hapi/inert')
+const username = process.env.TURN_USERNAME
+const secret = process.env.TURN_SECRET
 
 const server = new Hapi.Server({
   // host: process.env.HOST,
   port: ~~process.env.PORT
 })
 
-console.log('the host: ' + process.env.HOST)
-console.log('the port: ' + process.env.PORT)
-console.log('port type: ' + typeof ~~process.env.PORT)
 // attach Socket.io process to Hapi server
 const socketio = require('socket.io')
 const io = socketio(server.listener)
@@ -36,6 +36,24 @@ const start = async () => {
 
   await server.start()
   console.log('Server running at:', server.info.uri)
+}
+
+const getTurnCredentails = (username, secret) => {
+  let unixTimeStamp = parseInt(Date.now() / 1000) + 24 * 3600,
+      name = [unixTimeStamp, username].join(':'),
+      password,
+      token,
+      hmac = crypto.createHmac('sha1', secret)
+
+  hmac.setEncoding('base64')
+  hmac.write(name)
+  hmac.end()
+  password = hmac.read()
+  token = {
+    name: name,
+    password: password
+  }
+  return token
 }
 
 // signaling
@@ -62,9 +80,10 @@ io.on('connection', (socket) => {
   })
 
   // TURN server
-  socket.on('connect', (connect) => {
+  socket.on('token', () => {
     console.log('LOG: on connect')
-    socket.broadcast.emit('connect', connect)
+    const token = getTurnCredentails(username, secret)
+    socket.emit('token', token)
   })
 
   // send candidate straight on to the other browser

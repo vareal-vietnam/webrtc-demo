@@ -47,8 +47,8 @@ const VideoStream = {
     //   }
     // })
     console.log('event value in startCall: ' + JSON.stringify(event))
-    VideoStream.socket.on('connect', VideoStream.onConnect(VideoStream.createOffer))
-    VideoStream.socket.emit('connect')
+    VideoStream.socket.on('token', VideoStream.onConnect(VideoStream.createOffer))
+    VideoStream.socket.emit('token')
     VideoStream.callButton.setAttribute('disabled', 'disabled')
   },
 
@@ -56,14 +56,20 @@ const VideoStream = {
   onConnect: function onConnect (callback) {
     console.log("onConnect function.")
     // Set up a new RTCPeerConnection using the iceServers.
-    return function () {
+    return function (token) {
+      console.log('token get on client: ' + JSON.stringify(token))
       VideoStream.server = {
         iceServers: [
           { urls: 'stun:3.114.49.64' },
+          // {
+          //   urls: 'turn:numb.viagenie.ca?transport=udp',
+          //   credential: 'muazkh',
+          //   username: 'webrtc@live.com'
+          // }
           {
-            urls: 'turn:numb.viagenie.ca?transport=udp',
-            credential: 'muazkh',
-            username: 'webrtc@live.com'
+            urls: 'turn:3.144.49.64',
+            credential: token.password,
+            username: token.name
           }
         ]
       }
@@ -150,8 +156,8 @@ const VideoStream = {
   onOffer: function onOffer (offer) {
     console.log('onOffer function.')
     console.log('offer value in onOffer: ' + offer)
-    VideoStream.socket.on('connect', VideoStream.onConnect(VideoStream.createAnswer(offer)))
-    VideoStream.socket.emit('connect')
+    VideoStream.socket.on('token', VideoStream.onConnect(VideoStream.createAnswer(offer)))
+    VideoStream.socket.emit('token')
   },
 
   // add received answer to peerConnection as remote description
