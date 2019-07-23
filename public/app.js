@@ -178,6 +178,7 @@ const VideoStream = {
     console.log('event value on onAddStream: ' + JSON.stringify(event))
     VideoStream.remoteVideo = document.getElementById('remote-video')
     VideoStream.remoteVideo.srcObject = event.stream
+    VideoStream.callButton.setAttribute('disabled', 'disabled')
   }
 }
 
