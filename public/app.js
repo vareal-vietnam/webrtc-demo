@@ -58,21 +58,21 @@ const VideoStream = {
     // Set up a new RTCPeerConnection using the iceServers.
     return function (token) {
       console.log('token get on client: ' + JSON.stringify(token))
-      console.log('credential: ' + token.password)
-      console.log('name: ' + token.name)
+      // console.log('credential: ' + token.password)
+      // console.log('name: ' + token.name)
       VideoStream.server = {
         iceServers: [
           { urls: 'stun:3.114.49.64' },
-          // {
-          //   urls: 'turn:numb.viagenie.ca?transport=udp',
-          //   credential: 'muazkh',
-          //   username: 'webrtc@live.com'
-          // }
           {
-            urls: 'turn:3.114.49.64?transport=udp',
-            credential: token.password.toString(),
-            username: token.name.toString()
+            urls: 'turn:numb.viagenie.ca?transport=udp',
+            credential: 'muazkh',
+            username: 'webrtc@live.com'
           }
+          // {
+          //   urls: 'turn:3.114.49.64?transport=udp',
+          //   credential: token.password.toString(),
+          //   username: token.name.toString()
+          // }
         ]
       }
 
