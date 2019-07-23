@@ -8,7 +8,6 @@ const VideoStream = {
   // Call to showMyFace
   // asking for access to both the video and audio streams.
   showMyFace: function showMyFace () {
-    console.log('showMyFace function.')
     // Get the video element.
     VideoStream.localVideo = document.getElementById('local-video')
     // Turn the volumn down to 0 to avoid echoes.
@@ -29,24 +28,11 @@ const VideoStream = {
 
   // When we are ready to call, enable the Call button.
   readyToCall: function readyToCall (event) {
-    console.log('readyToCall function.')
     VideoStream.callButton.removeAttribute('disabled')
   },
 
   // Set up a callback to run when we connect to TURN server. And disable get-video button
   startCall: function startCall (event) {
-    console.log('startCall function.')
-    // need a loop run here to add each remote element to the local element
-    // VideoStream.socket.on('numClients', (numClients) => {
-    //   console.log('LOG: numClients:' + numClients)
-    //   if (numClients > 0){
-    //     console.log("inside if")
-    //     VideoStream.remoteVideo = "<video id='remote-video" + numClients + "'height='150' autoplay>Hello</video>"
-    //     VideoStream.localVideo.insertAdjacentHTML('afterend', VideoStream.remoteVideo)
-    //     console.log('remoteVideo: ' + VideoStream.remoteVideo)
-    //   }
-    // })
-    console.log('event value in startCall: ' + JSON.stringify(event))
     VideoStream.socket.on('token', VideoStream.onConnect(VideoStream.createOffer))
     VideoStream.socket.emit('token')
     VideoStream.callButton.setAttribute('disabled', 'disabled')
@@ -54,12 +40,8 @@ const VideoStream = {
 
   // Connect to server
   onConnect: function onConnect (callback) {
-    console.log("onConnect function.")
     // Set up a new RTCPeerConnection using the iceServers.
     return function (token) {
-      console.log('token get on client: ' + JSON.stringify(token))
-      console.log('credential: ' + token.password)
-      console.log('name: ' + token.name)
       VideoStream.server = {
         iceServers: [
           { urls: 'stun:3.114.49.64' },
@@ -70,11 +52,6 @@ const VideoStream = {
           }
         ]
       }
-      // {
-      //   urls: 'turn:numb.viagenie.ca?transport=udp',
-      //   credential: 'muazkh',
-      //   username: 'webrtc@live.com'
-      // }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
       console.log('peerConnection: ' + VideoStream.peerConnection)
@@ -95,8 +72,6 @@ const VideoStream = {
   // when peerConnection generates and ice candidate, send it over the socket
   // to the pee.
   onIceCandidate: function onIceCandidate (event) {
-    console.log('onIceCandidate function.')
-    console.log('event value on onIceCandidate: ' + JSON.stringify(event))
     if (event.candidate) {
       VideoStream.socket.emit('candidate', JSON.stringify(event.candidate))
     }
@@ -105,15 +80,12 @@ const VideoStream = {
   // When receiving a candidate over the socket, turn it back into a real
   // RTCIceCandidate and add it to the peerConnection.
   onCandidate: function onCandidate (candidate) {
-    console.log('onCandidate function.')
-    console.log('candidate value on onCandidate: ' + candidate)
     VideoStream.rtcCandidate = new RTCIceCandidate(JSON.parse(candidate))
     VideoStream.peerConnection.addIceCandidate(VideoStream.rtcCandidate)
   },
 
   // Create an offer that contains the media capabilities of the browser.
   createOffer: function createOffer () {
-    console.log('createOffer function.')
     VideoStream.peerConnection.createOffer(
       function(offer){
         // If the offer is created successfully, set it as the local description
@@ -135,14 +107,11 @@ const VideoStream = {
   // description to the peerConnection object. Then the answer is created in the
   // same manner as the offer and sent over the socket.
   createAnswer: function createAnswer (offer) {
-    console.log('createAnswer function.')
-    console.log('offer value on createAnswer: ' + offer)
     return function(){
       const rtcOffer = new RTCSessionDescription(JSON.parse(offer));
       VideoStream.peerConnection.setRemoteDescription(rtcOffer);
       VideoStream.peerConnection.createAnswer(
         function(answer){
-          console.log('create answer without errors: ' + answer)
           VideoStream.peerConnection.setLocalDescription(answer);
           VideoStream.socket.emit('answer', JSON.stringify(answer));
         },
@@ -157,16 +126,12 @@ const VideoStream = {
   // When a browser receives an offer, set up a callback to be run when
   // calling onConnect.
   onOffer: function onOffer (offer) {
-    console.log('onOffer function.')
-    console.log('offer value in onOffer: ' + offer)
     VideoStream.socket.on('token', VideoStream.onConnect(VideoStream.createAnswer(offer)))
     VideoStream.socket.emit('token')
   },
 
   // add received answer to peerConnection as remote description
   onAnswer: function onAnswer (answer) {
-    console.log('onAnswer function.')
-    console.log('answer value on onAnswer: ' + answer)
     const rtcAnswer = new RTCSessionDescription(JSON.parse(answer))
     VideoStream.peerConnection.setRemoteDescription(rtcAnswer)
   },
@@ -174,8 +139,6 @@ const VideoStream = {
   // When the peerConnection receives the actual media stream from the other
   // browser, add it to the other video element on the page.
   onAddStream: function onAddStream (event) {
-    console.log('onAddStream function.')
-    console.log('event value on onAddStream: ' + JSON.stringify(event))
     VideoStream.remoteVideo = document.getElementById('remote-video')
     VideoStream.remoteVideo.srcObject = event.stream
     VideoStream.callButton.setAttribute('disabled', 'disabled')

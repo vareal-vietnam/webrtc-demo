@@ -68,37 +68,30 @@ io.on('connection', (socket) => {
       console.log('LOG: numClients = 0')
       socket.join(room)
     } else if (numClients == 1) {
-      console.log('LOG: numClients = 1')
-      socket.emit('numClients', numClients)
       socket.join(room)
       socket.emit('ready', room)
       socket.broadcast.emit('ready', room)
     } else {
-      console.log('LOG: numClients > 1')
       socket.emit('full', room)
     }
   })
 
   // TURN server
   socket.on('token', () => {
-    console.log('LOG: on connect')
     const token = getTurnCredentails(username, secret)
     socket.emit('token', token)
   })
 
   // send candidate straight on to the other browser
   socket.on('candidate', (candidate) => {
-    console.log('LOG: on candidate')
     socket.broadcast.emit('candidate', candidate)
   })
 
   socket.on('offer', (offer) => {
-    console.log('LOG: on offer')
     socket.broadcast.emit('offer', offer)
   })
 
   socket.on('answer', (answer) => {
-    console.log('LOG: on answer')
     socket.broadcast.emit('answer', answer)
   })
 })
