@@ -82,8 +82,8 @@ io.on('connection', (socket) => {
   // TURN server
   socket.on('token', () => {
     console.log('LOG: on connect')
-    // const token = getTurnCredentails(username, secret)
-    socket.emit('token')
+    const token = getTurnCredentails(username, secret)
+    socket.emit('token', token)
   })
 
   // send candidate straight on to the other browser
