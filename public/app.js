@@ -69,7 +69,7 @@ const VideoStream = {
           //   username: 'webrtc@live.com'
           // }
           {
-            urls: 'turn:3.114.49.64?transport=udp',
+            urls: 'turn:3.114.49.64:443',
             credential: 'V@real2019', //token.password.toString(),
             username: 'turnserver' //token.name.toString()
           }
