@@ -70,7 +70,7 @@ const VideoStream = {
           // }
           {
             urls: 'turn:3.114.49.64?transport=udp',
-            credential: 'V@real2019' //token.password.toString(),
+            credential: 'V@real2019', //token.password.toString(),
             username: 'turnserver' //token.name.toString()
           }
         ]
