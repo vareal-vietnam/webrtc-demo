@@ -69,10 +69,12 @@ io.on('connection', (socket) => {
       console.log('LOG: numClients = 0')
       socket.join(room)
     } else if (numClients == 1) {
+      console.log('LOG: numClients = 1')
       socket.join(room)
       socket.emit('ready', room)
       socket.broadcast.emit('ready', room)
     } else {
+      console.log('LOG: numClients = full')
       socket.emit('full', room)
     }
   })

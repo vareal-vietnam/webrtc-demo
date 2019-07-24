@@ -6,12 +6,13 @@
 </head>
 <body>
   <h1>Video Chat</h1>
-
+  <p id="instruction">Please enter the room name.</p>
+  <input type="text" name="room" id="room-name" autofocus/>
   <video id="local-video" height="150" autoplay></video>
   <video id="remote-video" height="150" autoplay></video>
 
   <div>
-    <button id="get-video">Get Video</button>
+    <button id="get-video">Join Room</button>
     <button id="call" disabled="disabled">Call</button>
   </div>
 

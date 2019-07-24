@@ -8,26 +8,33 @@ const VideoStream = {
   // Call to showMyFace
   // asking for access to both the video and audio streams.
   showMyFace: function showMyFace () {
-    // Get the video element.
-    VideoStream.localVideo = document.getElementById('local-video')
-    // Turn the volumn down to 0 to avoid echoes.
-    VideoStream.localVideo.volumn = 0
-    VideoStream.getVideoButton.setAttribute('disabled', 'disabled')
-    // Turn the media stream into a URL that can be used by the video and add it
-    // as the video. As the video has the `autoplay` attribute it will start to
-    // stream immediately.
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-      .then(stream => VideoStream.localVideo.srcObject = stream)
-      .then(stream => VideoStream.localStream = stream)
+    if (VideoStream.room.value.length < 6){
+      alert('please enter atlest 6 characters!')
+    }
+    else {
+      // Get the video element.
+      VideoStream.localVideo = document.getElementById('local-video')
+      // Turn the volumn down to 0 to avoid echoes.
+      VideoStream.localVideo.volumn = 0
+      VideoStream.getVideoButton.setAttribute('disabled', 'disabled')
+      // Turn the media stream into a URL that can be used by the video and add it
+      // as the video. As the video has the `autoplay` attribute it will start to
+      // stream immediately.
+      navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+        .then(stream => VideoStream.localVideo.srcObject = stream)
+        .then(stream => VideoStream.localStream = stream)
 
-    // Ready to join the chat room
-    VideoStream.socket.emit('join', 'test')
-    VideoStream.socket.on('ready', VideoStream.readyToCall)
-    VideoStream.socket.on('offer', VideoStream.onOffer)
+      // Ready to join the chat room
+
+      VideoStream.socket.emit('join', VideoStream.room.value)
+      VideoStream.socket.on('ready', VideoStream.readyToCall)
+      VideoStream.socket.on('offer', VideoStream.onOffer)
+    }
   },
 
   // When we are ready to call, enable the Call button.
   readyToCall: function readyToCall (event) {
+    console.log('readyToCall')
     VideoStream.callButton.removeAttribute('disabled')
   },
 
@@ -153,6 +160,8 @@ const VideoStream = {
 
 VideoStream.getVideoButton = document.getElementById('get-video')
 VideoStream.callButton = document.getElementById('call')
+
+VideoStream.room = document.getElementById('room-name')
 
 VideoStream.getVideoButton.addEventListener(
   'click',
