@@ -38,6 +38,7 @@ const start = async () => {
   console.log('Server running at:', server.info.uri)
 }
 
+// TURN REST API
 const getTurnCredentails = (username, secret) => {
   let unixTimeStamp = parseInt(Date.now() / 1000) + 24 * 3600,
       name = [unixTimeStamp, username].join(':'),

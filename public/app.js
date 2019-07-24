@@ -54,7 +54,6 @@ const VideoStream = {
       }
 
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
-      console.log('peerConnection: ' + VideoStream.peerConnection)
       // Add the local video stream to the peerConnection.
       VideoStream.peerConnection.addStream(VideoStream.localStream)
       // Set up callbacks for the connection generating iceCandidates or
@@ -65,6 +64,13 @@ const VideoStream = {
       // over the socket connection.
       VideoStream.socket.on('candidate', VideoStream.onCandidate)
       VideoStream.socket.on('answer', VideoStream.onAnswer)
+      // Remove disconnected client
+      VideoStream.peerConnection.oniceconnectionstatechange = function() {
+        if(VideoStream.peerConnection.iceConnectionState == 'disconnected') {
+          console.log('Disconnected');
+          VideoStream.remoteVideo.remove();
+        }
+      }
       callback()
     }
   },
