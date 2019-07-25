@@ -35,7 +35,9 @@ const VideoStream = {
   // When we are ready to call, enable the Call button.
   readyToCall: function readyToCall (event) {
     console.log('readyToCall')
-    VideoStream.callButton.removeAttribute('disabled')
+    if (event == VideoStream.room.value){
+      VideoStream.callButton.removeAttribute('disabled')
+    }
   },
 
   // Set up a callback to run when we connect to TURN server. And disable get-video button
@@ -95,6 +97,7 @@ const VideoStream = {
   onCandidate: function onCandidate (candidate) {
     VideoStream.rtcCandidate = new RTCIceCandidate(JSON.parse(candidate))
     VideoStream.peerConnection.addIceCandidate(VideoStream.rtcCandidate)
+    VideoStream.callButton.setAttribute('disabled', 'disabled')
   },
 
   // Create an offer that contains the media capabilities of the browser.
@@ -154,7 +157,8 @@ const VideoStream = {
   onAddStream: function onAddStream (event) {
     VideoStream.remoteVideo = document.getElementById('remote-video')
     VideoStream.remoteVideo.srcObject = event.stream
-    VideoStream.callButton.setAttribute('disabled', 'disabled')
+
+    // VideoStream.callButton.setAttribute('disabled', 'disabled')
   }
 }
 
