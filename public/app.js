@@ -62,14 +62,9 @@ const VideoStream = {
         ]
       }
 
-      console.log('username: ' + token.username)
-      console.log('credential: ' + token.credential)
-
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
-      console.log('peerConnection: ' + VideoStream.peerConnection)
       // Add the local video stream to the peerConnection.
       VideoStream.peerConnection.addStream(VideoStream.localStream)
-      console.log('room-name: ' + VideoStream.room.value.toString())
       // Set up callbacks for the connection generating iceCandidates or
       // receiving the remote media stream.
       VideoStream.peerConnection.onicecandidate = VideoStream.onIceCandidate
