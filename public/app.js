@@ -53,18 +53,23 @@ const VideoStream = {
     return function (token) {
       VideoStream.server = {
         iceServers: [
-          { urls: 'stun:3.114.49.64' },
+          { urls: 'stun:13.230.24.249' },
           {
-            urls: 'turn:3.114.49.64:443',
+            urls: 'turn:13.230.24.249:443',
             credential: token.password,
             username: token.name
           }
         ]
       }
 
+      console.log('username: ' + token.username)
+      console.log('credential: ' + token.credential)
+
       VideoStream.peerConnection = new RTCPeerConnection(VideoStream.server)
+      console.log('peerConnection: ' + VideoStream.peerConnection)
       // Add the local video stream to the peerConnection.
       VideoStream.peerConnection.addStream(VideoStream.localStream)
+      console.log('room-name: ' + VideoStream.room.value.toString())
       // Set up callbacks for the connection generating iceCandidates or
       // receiving the remote media stream.
       VideoStream.peerConnection.onicecandidate = VideoStream.onIceCandidate
@@ -124,8 +129,8 @@ const VideoStream = {
   // same manner as the offer and sent over the socket.
   createAnswer: function createAnswer (offer) {
     return function(){
-      const rtcOffer = new RTCSessionDescription(JSON.parse(offer));
-      VideoStream.peerConnection.setRemoteDescription(rtcOffer);
+      VideoStream.rtcOffer = new RTCSessionDescription(JSON.parse(offer));
+      VideoStream.peerConnection.setRemoteDescription(VideoStream.rtcOffer);
       VideoStream.peerConnection.createAnswer(
         function(answer){
           VideoStream.peerConnection.setLocalDescription(answer);
@@ -148,8 +153,8 @@ const VideoStream = {
 
   // add received answer to peerConnection as remote description
   onAnswer: function onAnswer (answer) {
-    const rtcAnswer = new RTCSessionDescription(JSON.parse(answer))
-    VideoStream.peerConnection.setRemoteDescription(rtcAnswer)
+    VideoStream.rtcAnswer = new RTCSessionDescription(JSON.parse(answer))
+    VideoStream.peerConnection.setRemoteDescription(VideoStream.rtcAnswer)
   },
 
   // When the peerConnection receives the actual media stream from the other
