@@ -11,7 +11,7 @@
   "author": "hien",
   "license": "ISC",
   "dependencies": {
-    "@hapi/hapi": "^18.3.1",
+    "@hapi/hapi": "^19.1.1",
     "@hapi/inert": "^5.2.1",
     "dotenv": "^8.0.0",
     "hapi": "^18.1.0",
